@@ -14,8 +14,8 @@
 
 /// /////  GLOBAL VARIABLES  /////
 
-struct ChallengeEquivalenceGroup* group;
-struct Challenge* challenge;
+struct ChallengeEquivalenceGroup* group = NULL;
+struct Challenge* challenge = NULL;
 
 
 

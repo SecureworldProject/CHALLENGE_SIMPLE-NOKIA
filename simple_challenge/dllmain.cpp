@@ -59,6 +59,8 @@ int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challe
 	// It is mandatory to fill these global variables
 	group = group_param;
 	challenge = challenge_param;
+	if (group == NULL || challenge == NULL)
+		return - 1;
 
 	// Process challenge parameters
 	getChallengeParameters();
@@ -87,6 +89,8 @@ void refresh_subkey(LPVOID th_param) {
 
 int executeChallenge() {
 	printf("Execute (%ws)\n", challenge->file_name);
+	if (group == NULL || challenge == NULL)
+		return -1;
 
 	int size_of_key = strlen(param1) * param2 * sizeof(char);
 	byte* key = (byte*)malloc(strlen(param1) * param2 * sizeof(char));
