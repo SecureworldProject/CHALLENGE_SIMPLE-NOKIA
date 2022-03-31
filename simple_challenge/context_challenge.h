@@ -7,6 +7,15 @@
 #include <Windows.h>
 #include <time.h>
 #include <stdio.h>
+#include "json.h"
+
+
+
+
+/// /////  GLOBAL VARIABLES  /////
+
+struct ChallengeEquivalenceGroup* group;
+struct Challenge* challenge;
 
 
 
@@ -24,7 +33,7 @@ struct ChallengeEquivalenceGroup {
 struct Challenge {
 	WCHAR* file_name;
 	HINSTANCE lib_handle;
-	char* properties;		// String of properties as in a HTML query: "prop1=valor&prop2=valor..."
+	json_value* properties;	// Properties as a json_value
 };
 
 struct KeyData {
