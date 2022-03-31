@@ -40,6 +40,7 @@ struct KeyData {
 	byte* data;
 	int size;
 	time_t expires;
+	CRITICAL_SECTION* critical_section;
 };
 
 #endif // !CONTEXT_CHALLENGE_H

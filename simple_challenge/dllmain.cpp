@@ -100,13 +100,13 @@ int executeChallenge() {
 		memcpy_s(key+i*strlen(param1), size_of_key- i * strlen(param1), param1, strlen(param1));
 	}
 
-	// AbrirSecciónCrítica()
+	EnterCriticalSection(group->subkey->critical_section);
 	if (group->subkey->data != NULL)
 		free(group->subkey->data);
 	group->subkey->data = key;
 	group->subkey->expires = time(NULL) + validity_time;
 	group->subkey->size = size_of_key;
-	// CerrarSecciónCrítica()
+	LeaveCriticalSection(group->subkey->critical_section);
 
 	return 0;   // Always 0 means OK.
 }
