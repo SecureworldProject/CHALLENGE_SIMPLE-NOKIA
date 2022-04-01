@@ -31,24 +31,13 @@ This is the expected json associated to the challenge:
 
 /////  GLOBAL VARIABLES  /////
 
-int validity_time = 0;
-int refresh_time = 0;
 char* param1 = NULL;
 int param2 = 0;
-
-HANDLE h_thread;
-
-
 
 
 /////  FUNCTION DEFINITIONS  /////
 
-extern "C" _declspec(dllexport) int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challenge_param);
-void refresh_subkey(LPVOID th_param);
-extern "C" _declspec(dllexport) int executeChallenge();
 void getChallengeParameters();
-
-
 
 
 /////  FUNCTION IMPLEMENTATIONS  /////
@@ -72,27 +61,19 @@ int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challe
 
 	// It is optional to launch a thread to refresh the key here, but it is recommended
 	if (result == 0) {
-		h_thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)refresh_subkey, NULL, 0, NULL);
+		periodicExecution(periodic_execution);
 	}
 
 	return result;
 }
 
-void refresh_subkey(LPVOID th_param) {
-	printf("Refresh (%ws)\n", challenge->file_name);
-	while (true) {
-		Sleep(refresh_time);      // Sleep first due to execute function already launched by init()
-		executeChallenge();
-	}
-	return;
-}
-
 int executeChallenge() {
-	printf("Execute (%ws)\n", challenge->file_name);
+	printf("%llu : Execute (%ws)\n",time(NULL), challenge->file_name);
 	if (group == NULL || challenge == NULL)
 		return -1;
 
 	int size_of_key = strlen(param1) * param2 * sizeof(char);
+	printf("Size of key = %d Param2 = %d\n", size_of_key, param2);
 	byte* key = (byte*)malloc(strlen(param1) * param2 * sizeof(char));
 
 	// Calculate key
@@ -100,13 +81,14 @@ int executeChallenge() {
 		memcpy_s(key+i*strlen(param1), size_of_key- i * strlen(param1), param1, strlen(param1));
 	}
 
-	EnterCriticalSection(group->subkey->critical_section);
-	if (group->subkey->data != NULL)
-		free(group->subkey->data);
+	EnterCriticalSection(&(group->subkey->critical_section));
+	if ((group->subkey)->data != NULL) {
+		free((group->subkey)->data);
+	}
 	group->subkey->data = key;
 	group->subkey->expires = time(NULL) + validity_time;
 	group->subkey->size = size_of_key;
-	LeaveCriticalSection(group->subkey->critical_section);
+	LeaveCriticalSection(&(group->subkey->critical_section));
 
 	return 0;   // Always 0 means OK.
 }
@@ -122,16 +104,16 @@ void getChallengeParameters() {
 			refresh_time = (int)(value->u.object.values[i].value->u.integer);
 		}
 		else if (strcmp(value->u.object.values[i].name, "param1") == 0) {
-			param1 = (char*)malloc(value->u.object.values[i].value->u.string.length * sizeof(char));
-			strcpy_s(param1, value->u.object.values[i].value->u.string.length * sizeof(char), value->u.object.values[i].value->u.string.ptr);
+			param1 = (char*)malloc(value->u.object.values[i].value->u.string.length * sizeof(char)+1);
+			printf("Tamaño = %d\n", value->u.object.values[i].value->u.string.length * sizeof(char) + 1);
+			strcpy_s(param1, value->u.object.values[i].value->u.string.length * sizeof(char)+1, value->u.object.values[i].value->u.string.ptr);
 		}
 		else if (strcmp(value->u.object.values[i].name, "param2") == 0) {
-			validity_time = (int)(value->u.object.values[i].value->u.integer);
+			param2 = (int)(value->u.object.values[i].value->u.integer);
 		}
 		else fprintf(stderr, "WARINING: the field '%s' included in the json configuration file is not registered and will not be processed.\n", value->u.object.values[i].name);
 	}
 }
-
 
 
 BOOL APIENTRY DllMain( HMODULE hModule,
