@@ -14,17 +14,11 @@ This is the expected json associated to the challenge:
 }
 */
 
+
 /////  FILE INCLUDES  /////
 
 #include "pch.h"
 #include "context_challenge.h"
-
-
-
-
-/////  DEFINITIONS  /////
-
-#define VALID_KEY 0
 
 
 
@@ -35,14 +29,20 @@ char* param1 = NULL;
 int param2 = 0;
 
 
+
+
 /////  FUNCTION DEFINITIONS  /////
 
-void getChallengeParameters();
+void getChallengeProperties();
+
+
 
 
 /////  FUNCTION IMPLEMENTATIONS  /////
 
 int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challenge_param){
+	printf("Initializing (%ws)\n", challenge->file_name);
+
 	int result = 0;
 
 	// It is mandatory to fill these global variables
@@ -52,9 +52,7 @@ int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challe
 		return - 1;
 
 	// Process challenge parameters
-	getChallengeParameters();
-
-	printf("Initializing (%ws)\n", challenge->file_name);
+	getChallengeProperties();
 
 	// It is optional to execute the challenge here
 	result = executeChallenge();
@@ -68,32 +66,45 @@ int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challe
 }
 
 int executeChallenge() {
-	printf("%llu : Execute (%ws)\n",time(NULL), challenge->file_name);
-	if (group == NULL || challenge == NULL)
+	printf("%llu: Executing challenge (%ws)\n", time(NULL), challenge->file_name);
+
+	// Nullity check
+	if (group == NULL || challenge == NULL || param1 == NULL)
 		return -1;
 
-	int size_of_key = strlen(param1) * param2 * sizeof(char);
-	printf("Size of key = %d Param2 = %d\n", size_of_key, param2);
-	byte* key = (byte*)malloc(strlen(param1) * param2 * sizeof(char));
 
-	// Calculate key
+	// Calculate new key (size, data and expire date)
+	int new_size = strlen(param1) * param2 * sizeof(char);
+
+	byte* new_key_data = (byte*)malloc(strlen(param1) * param2 * sizeof(char));
+	if (new_key_data == NULL)
+		return -1;
+
 	for (int i = 0; i < param2; i++) {
-		memcpy_s(key+i*strlen(param1), size_of_key- i * strlen(param1), param1, strlen(param1));
+		if (0 != memcpy_s(new_key_data + i * strlen(param1), new_size - i * strlen(param1), param1, strlen(param1))) {
+			free(new_key_data);
+			return -1;
+		}
 	}
 
+	time_t new_expires = time(NULL) + validity_time;
+
+
+	// Update KeyData inside critical section
 	EnterCriticalSection(&(group->subkey->critical_section));
 	if ((group->subkey)->data != NULL) {
 		free((group->subkey)->data);
 	}
-	group->subkey->data = key;
-	group->subkey->expires = time(NULL) + validity_time;
-	group->subkey->size = size_of_key;
+	group->subkey->data = new_key_data;
+	group->subkey->expires = new_expires;
+	group->subkey->size = new_size;
 	LeaveCriticalSection(&(group->subkey->critical_section));
 
-	return 0;   // Always 0 means OK.
+	return 0;	// Always 0 means OK.
 }
 
-void getChallengeParameters() {
+
+void getChallengeProperties() {
 	printf("Getting challenge parameters\n");
 	json_value* value = challenge->properties;
 	for (int i = 0; i < value->u.object.length; i++) {
@@ -104,15 +115,18 @@ void getChallengeParameters() {
 			refresh_time = (int)(value->u.object.values[i].value->u.integer);
 		}
 		else if (strcmp(value->u.object.values[i].name, "param1") == 0) {
-			param1 = (char*)malloc(value->u.object.values[i].value->u.string.length * sizeof(char)+1);
-			printf("Tamaño = %d\n", value->u.object.values[i].value->u.string.length * sizeof(char) + 1);
-			strcpy_s(param1, value->u.object.values[i].value->u.string.length * sizeof(char)+1, value->u.object.values[i].value->u.string.ptr);
+			param1 = (char*)malloc((1 + value->u.object.values[i].value->u.string.length) * sizeof(char));
+			if (param1 != NULL) {
+				strcpy_s(param1, (1 + value->u.object.values[i].value->u.string.length) * sizeof(char), value->u.object.values[i].value->u.string.ptr);
+			}
 		}
 		else if (strcmp(value->u.object.values[i].name, "param2") == 0) {
 			param2 = (int)(value->u.object.values[i].value->u.integer);
 		}
-		else fprintf(stderr, "WARINING: the field '%s' included in the json configuration file is not registered and will not be processed.\n", value->u.object.values[i].name);
+		else fprintf(stderr, "WARNING: the field '%s' included in the json configuration file is not registered and will not be processed.\n", value->u.object.values[i].name);
 	}
+	printf("Challenge properties: \n  validity_time = %d \n  refresh_time = %d \n  param1 = %s \n  param2 = %d \n",
+		validity_time, refresh_time, (param1 == NULL) ? "NULL" : param1, param2);
 }
 
 

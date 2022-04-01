@@ -12,22 +12,26 @@
 
 
 
-/// /////  GLOBAL VARIABLES  /////
+/////  GLOBAL VARIABLES  /////
 
 struct ChallengeEquivalenceGroup* group = NULL;
 struct Challenge* challenge = NULL;
-bool periodic_execution = true;
+BOOL periodic_execution = TRUE;
 int validity_time = 0;
 int refresh_time = 0;
 HANDLE h_thread = INVALID_HANDLE_VALUE;
 
 
-/////////  FUNCTIONS  /////
+
+
+/////  FUNCTION DEFINITIONS  /////
 
 extern "C" _declspec(dllexport) int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challenge_param);
 extern "C" _declspec(dllexport) int executeChallenge();
-extern "C" _declspec(dllexport)  void periodicExecution(bool active_param);
+extern "C" _declspec(dllexport) void periodicExecution(BOOL active_param);
 void refreshSubkey(LPVOID th_param);
+
+
 
 
 /////  STRUCTS AND ENUMS  /////
@@ -54,7 +58,11 @@ struct KeyData {
 };
 
 
-void periodicExecution(bool active_param) {
+
+
+/////  FUNCTION IMPLEMENTATIONS  /////
+
+void periodicExecution(BOOL active_param) {
 	periodic_execution = active_param;
 	if (active_param) {
 		h_thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)refreshSubkey, NULL, 0, NULL);
@@ -65,9 +73,11 @@ void refreshSubkey(LPVOID th_param) {
 	Sleep(refresh_time*1000);
 	while (periodic_execution) {
 		executeChallenge();
-		Sleep(refresh_time*1000);      // Sleep first due to execute function already launched by init()
+		Sleep(refresh_time*1000);		// Sleep first due to execute function already launched by init()
 	}
 	return;
 }
+
+
 
 #endif // !CONTEXT_CHALLENGE_H
