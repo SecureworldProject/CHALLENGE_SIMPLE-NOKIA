@@ -41,15 +41,17 @@ void getChallengeProperties();
 /////  FUNCTION IMPLEMENTATIONS  /////
 
 int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challenge_param){
-	printf("\033[33m Initializing (%ws) \033[0m \n", challenge->file_name);
 
 	int result = 0;
 
 	// It is mandatory to fill these global variables
 	group = group_param;
 	challenge = challenge_param;
-	if (group == NULL || challenge == NULL)
-		return - 1;
+	if (group == NULL || challenge == NULL) {
+		printf("\033[33mGroup or challenge are NULL \n \033[0m");
+		return -1;
+	}
+	printf("\033[33mInitializing (%ws) \n \033[0m", challenge->file_name);
 
 	// Process challenge parameters
 	getChallengeProperties();
