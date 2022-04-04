@@ -41,7 +41,7 @@ void getChallengeProperties();
 /////  FUNCTION IMPLEMENTATIONS  /////
 
 int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challenge_param){
-	printf("Initializing (%ws)\n", challenge->file_name);
+	printf("\033[33m Initializing (%ws) \033[0m \n", challenge->file_name);
 
 	int result = 0;
 
@@ -66,7 +66,7 @@ int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challe
 }
 
 int executeChallenge() {
-	printf("%llu: Executing challenge (%ws)\n", time(NULL), challenge->file_name);
+	printf("\033[33m %llu: Executing challenge (%ws)\n \033[0m", time(NULL), challenge->file_name);
 
 	// Nullity check
 	if (group == NULL || challenge == NULL || param1 == NULL)
@@ -105,7 +105,7 @@ int executeChallenge() {
 
 
 void getChallengeProperties() {
-	printf("Getting challenge parameters\n");
+	printf("\033[33m Getting challenge parameters\n \033[0m");
 	json_value* value = challenge->properties;
 	for (int i = 0; i < value->u.object.length; i++) {
 		if (strcmp(value->u.object.values[i].name, "validity_time") == 0) {
@@ -123,9 +123,9 @@ void getChallengeProperties() {
 		else if (strcmp(value->u.object.values[i].name, "param2") == 0) {
 			param2 = (int)(value->u.object.values[i].value->u.integer);
 		}
-		else fprintf(stderr, "WARNING: the field '%s' included in the json configuration file is not registered and will not be processed.\n", value->u.object.values[i].name);
+		else fprintf(stderr, "\033[33m WARNING: the field '%s' included in the json configuration file is not registered and will not be processed.\n \033[0m", value->u.object.values[i].name);
 	}
-	printf("Challenge properties: \n  validity_time = %d \n  refresh_time = %d \n  param1 = %s \n  param2 = %d \n",
+	printf("\033[33m Challenge properties: \n  validity_time = %d \n  refresh_time = %d \n  param1 = %s \n  param2 = %d \n \033[0m",
 		validity_time, refresh_time, (param1 == NULL) ? "NULL" : param1, param2);
 }
 
