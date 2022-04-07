@@ -48,10 +48,10 @@ int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challe
 	group = group_param;
 	challenge = challenge_param;
 	if (group == NULL || challenge == NULL) {
-		printf("\033[33mGroup or challenge are NULL \n \033[0m");
+		printf("---  Group or challenge are NULL \n");
 		return -1;
 	}
-	printf("\033[33mInitializing (%ws) \n \033[0m", challenge->file_name);
+	printf("---  Initializing (%ws) \n", challenge->file_name);
 
 	// Process challenge parameters
 	getChallengeProperties();
@@ -61,14 +61,14 @@ int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challe
 
 	// It is optional to launch a thread to refresh the key here, but it is recommended
 	if (result == 0) {
-		periodicExecution(periodic_execution);
+		launchPeriodicExecution();
 	}
 
 	return result;
 }
 
 int executeChallenge() {
-	printf("\033[33m %llu: Executing challenge (%ws)\n \033[0m", time(NULL), challenge->file_name);
+	printf("---  Executing challenge (%ws)\n", challenge->file_name);
 
 	// Nullity check
 	if (group == NULL || challenge == NULL || param1 == NULL)
@@ -107,7 +107,7 @@ int executeChallenge() {
 
 
 void getChallengeProperties() {
-	printf("\033[33m Getting challenge parameters\n \033[0m");
+	printf("---  Getting challenge parameters\n");
 	json_value* value = challenge->properties;
 	for (int i = 0; i < value->u.object.length; i++) {
 		if (strcmp(value->u.object.values[i].name, "validity_time") == 0) {
@@ -125,9 +125,9 @@ void getChallengeProperties() {
 		else if (strcmp(value->u.object.values[i].name, "param2") == 0) {
 			param2 = (int)(value->u.object.values[i].value->u.integer);
 		}
-		else fprintf(stderr, "\033[33m WARNING: the field '%s' included in the json configuration file is not registered and will not be processed.\n \033[0m", value->u.object.values[i].name);
+		else fprintf(stderr, "---  WARNING: the field '%s' included in the json configuration file is not registered and will not be processed.\n", value->u.object.values[i].name);
 	}
-	printf("\033[33m Challenge properties: \n  validity_time = %d \n  refresh_time = %d \n  param1 = %s \n  param2 = %d \n \033[0m",
+	printf("---  Challenge properties: \n  validity_time = %d \n  refresh_time = %d \n  param1 = %s \n  param2 = %d \n",
 		validity_time, refresh_time, (param1 == NULL) ? "NULL" : param1, param2);
 }
 

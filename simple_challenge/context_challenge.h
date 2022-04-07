@@ -28,7 +28,8 @@ HANDLE h_thread = INVALID_HANDLE_VALUE;
 
 extern "C" _declspec(dllexport) int init(struct ChallengeEquivalenceGroup* group_param, struct Challenge* challenge_param);
 extern "C" _declspec(dllexport) int executeChallenge();
-extern "C" _declspec(dllexport) void periodicExecution(BOOL active_param);
+extern "C" _declspec(dllexport) void setPeriodicExecution(bool active_param);
+void launchPeriodicExecution();
 void refreshSubkey(LPVOID th_param);
 
 
@@ -62,9 +63,13 @@ struct KeyData {
 
 /////  FUNCTION IMPLEMENTATIONS  /////
 
-void periodicExecution(BOOL active_param) {
+void setPeriodicExecution(bool active_param) {
+	printf("--- Periodic exec: %d \n", active_param);
 	periodic_execution = active_param;
-	if (active_param) {
+}
+
+void launchPeriodicExecution() {
+	if (periodic_execution) {
 		h_thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)refreshSubkey, NULL, 0, NULL);
 	}
 }
