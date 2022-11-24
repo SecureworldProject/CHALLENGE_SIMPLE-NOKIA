@@ -16,3 +16,19 @@ Every challenge must implement the API:
  - executeChallenge(): executes the procedure defined by programmer to generate the key based on user context. Also updates the expire time.
 
 In the case that ther is not a thread updating the key data periodically, the secure virtual filesystem logic will invoke executeChallenge() when the key expires.
+
+config json example
+```
+{
+	"FileName": "simple_challenge.dll",
+	"Description": "This is a simple challenge that does nothing.",
+	"Props": {
+		"validity_time": 3600,
+		"refresh_time": 5,
+		"param1": "texto",
+		"param2": 3
+	},
+	"Requirements": "none"
+}
+
+```
