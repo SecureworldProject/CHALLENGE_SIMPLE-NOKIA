@@ -17,8 +17,8 @@ Every challenge must implement the API:
 
 In the case that ther is not a thread updating the key data periodically, the secure virtual filesystem logic will invoke executeChallenge() when the key expires.
 
-config json example
-```
+Config json example: simplechallengeC.json
+```JSON
 {
 	"FileName": "simple_challenge.dll",
 	"Description": "This is a simple challenge that does nothing.",
